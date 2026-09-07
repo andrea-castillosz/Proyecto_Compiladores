@@ -10,20 +10,20 @@ enum class TokenType {
     IDENTIFICADOR,
 
     // palabras reservadas 
-    LET, FN, IF, ELSE, WHILE, FOR, RETURN, TRUE, FALSE,
+    LET, FN, IF, ELSE, WHILE, FOR, RETURN, TRUE, FALSE,MUT,IN,
 
     // tipos primitivos 
     TIPO_I32, TIPO_F64, TIPO_BOOL, TIPO_CHAR, TIPO_STR,
 
     // numeros 
-    ENTERO, FLOTANTE,
+    INTEGER, FLOAT,
 
     // cadena y caracter 
-    CADENA, CARACTER,
+    STRING, CHARACTER,
 
     // operadores de un caracter 
     PLUS, MINUS, TIMES, DIV, MOD,
-    ASSIGN, LT, GT, NOT, AMP, PIPE, DOT,
+    ASSIGN, LT, GT, NOT, AMP, 
 
     // operadores de dos caracteres
     ARROW, // ->
@@ -47,6 +47,7 @@ struct Token {
     TokenType type;
     string lexema;
     int linea;
+    int columna;
 };
 
 // nombre del tipo de token para imprimir
