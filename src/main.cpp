@@ -34,7 +34,7 @@ int main() {
     
 
     //prueba leerArchivo
-    std::string rutaArchivo = "pruebas/prueba1.rs"; 
+    std::string rutaArchivo = "src/pruebas/prueba2.rs"; 
     std::string contenido = leerArchivo(rutaArchivo);
     if (!contenido.empty()) {
         std::cout << "Contenido del archivo:\n" << contenido << std::endl;

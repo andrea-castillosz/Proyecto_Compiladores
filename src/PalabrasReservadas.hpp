@@ -3,7 +3,7 @@
 
 #include <string>
 #include <unordered_map>
-#include "Token.hpp"
+#include "token.hpp"
 
 inline TokenType buscarPalabraReservada(const std::string& lexema) {
     static const std::unordered_map<std::string, TokenType> tabla = {
