@@ -3,6 +3,7 @@
 #include "lexer.hpp"
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 std::string leerArchivo(const std::string& ruta) {
     std::ifstream archivo(ruta);
@@ -32,20 +33,16 @@ int main(int argc, char* argv[]) {
     }
 
     //prueba Lexer
+    std::vector<Token> tokens;
     Lexer lexer(contenido);
     Token token;
     do {
         token = lexer.siguienteToken();
-        
-        if (token.type == TokenType::ERROR) {
-           std::cout << "Token: " << token.lexema
-          << " - Tipo: " << tokenTypeToString(token.type)
-          << " - Linea: " << token.linea
-          << " - Col: " << token.columna << std::endl;
-        }else{
-            std::cout << "Token: " << token.lexema << " - Tipo: " << tokenTypeToString(token.type) << std::endl;
-        }
-    } while (token.type != TokenType::END_OF_FILE);
+        tokens.push_back(token);
+    } while (token.type != TokenType::END_OF_FILE);//nvm ahora vamos a guardar los tokens en un vector para que sea mas facil para el parser
+    for (const auto& t : tokens) {
+        std::cout << "Token: " << tokenTypeToString(t.type) << ", Lexema: '" << t.lexema << "', Linea: " << t.linea << ", Columna: " << t.columna << std::endl;
+    }
 
     return 0;
 }
