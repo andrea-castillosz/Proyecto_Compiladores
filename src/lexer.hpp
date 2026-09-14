@@ -21,7 +21,8 @@ private:
     char verSiguiente() const;
     char avanzar();
     bool coincide(char esperado);
-    void saltarBlancos();
+    void saltarBlancos() ;
+    bool esBlanco(char c) const;
 
     Token construirToken(TokenType tipo, const std::string& lexema, int lineaInicio, int columnaInicio);
 
@@ -31,7 +32,7 @@ private:
     Token cadena(int lineaInicio, int columnaInicio);
     Token caracter(int lineaInicio, int columnaInicio);
     void comentarioDeLinea();
-    void comentarioDeBloque();
+    bool comentarioDeBloque();
 
     bool esDigito(char c) const;
     bool esLetra(char c) const;

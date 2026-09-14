@@ -7,7 +7,7 @@ Lexer::Lexer(const std::string& entradaFuente) {
     linea = 1;
     columna = 1;
 }
-bool esBlanco(char c) {
+bool Lexer::esBlanco(char c) const {
     return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
@@ -119,9 +119,11 @@ Token Lexer::siguienteToken() {
                     comentarioDeLinea();
                     continue; 
                 }
-                if (coincide('*')) {
-                    comentarioDeBloque();
-                    continue; 
+                if (coincide('*')) { // si no cerro bien devuelve un token de error si no cae en el continue
+                    if (!comentarioDeBloque()) {
+                        return construirToken(TokenType::ERROR, "/*", lineaInicio, columnaInicio);
+                    }
+                    continue;
                 }
                 return construirToken(TokenType::DIV, "/", lineaInicio, columnaInicio);
 
@@ -235,13 +237,14 @@ void Lexer::comentarioDeLinea() {
 }
 
 // ---------- comentario bloque ----------
-void Lexer::comentarioDeBloque() {
+bool Lexer::comentarioDeBloque() { //se cambio a bool para indicar si se cerro correctamente
     while (pos < entrada.size()) {
         if (verActual() == '*' && verSiguiente() == '/') {
             avanzar(); // '*'
             avanzar(); // '/'
-            return;
+            return true;
         }
         avanzar();
     }
+    return false;
 }

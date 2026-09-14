@@ -15,31 +15,20 @@ std::string leerArchivo(const std::string& ruta) {
     return buffer.str();
 }
 
-int main() {
-    // probando buscarPalabraReservada con "let" y con "x"
-    std::string palabra1 = "let";
-    std::string palabra2 = "x";
-    TokenType tipo1 = buscarPalabraReservada(palabra1);
-    TokenType tipo2 = buscarPalabraReservada(palabra2);
-    if (tipo1 == TokenType::LET) {
-        std::cout << palabra1 << " es una palabra reservada." << std::endl;
-    } else {
-        std::cout << palabra1 << " no es una palabra reservada." << std::endl;
+int main(int argc, char* argv[]) {
+     if (argc < 2) {
+        std::cerr << "Uso: ./compilador <archivo.rs>" << std::endl;
+        return 1;
     }
-    if (tipo2 == TokenType::IDENTIFICADOR) {
-        std::cout << palabra2 << " es un identificador." << std::endl;
-    } else {
-        std::cout << palabra2 << " es una palabra reservada." << std::endl;
-    }
+    std::string rutaArchivo = argv[1];
     
-
     //prueba leerArchivo
-    std::string rutaArchivo = "src/pruebas/prueba2.rs"; 
+   
     std::string contenido = leerArchivo(rutaArchivo);
     if (!contenido.empty()) {
-        std::cout << "Contenido del archivo:\n" << contenido << std::endl;
+      //  std::cout << "Contenido del archivo:\n" << contenido << std::endl;
     } else {
-        std::cout << "El archivo está vacío o no se pudo leer." << std::endl;
+       // std::cout << "El archivo está vacío o no se pudo leer." << std::endl;
     }
 
     //prueba Lexer
@@ -47,7 +36,15 @@ int main() {
     Token token;
     do {
         token = lexer.siguienteToken();
-        std::cout << "Token: " << token.lexema << " - Tipo: " << tokenTypeToString(token.type) << std::endl;
+        
+        if (token.type == TokenType::ERROR) {
+           std::cout << "Token: " << token.lexema
+          << " - Tipo: " << tokenTypeToString(token.type)
+          << " - Linea: " << token.linea
+          << " - Col: " << token.columna << std::endl;
+        }else{
+            std::cout << "Token: " << token.lexema << " - Tipo: " << tokenTypeToString(token.type) << std::endl;
+        }
     } while (token.type != TokenType::END_OF_FILE);
 
     return 0;
