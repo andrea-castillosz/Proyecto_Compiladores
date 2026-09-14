@@ -1,4 +1,4 @@
-#include "Token.hpp"
+#include "token.hpp"
 
 std::string tokenTypeToString(TokenType type) {
     switch (type) {
