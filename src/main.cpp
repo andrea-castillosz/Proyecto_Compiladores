@@ -1,6 +1,7 @@
 #include <iostream>
 #include "PalabrasReservadas.hpp"
 #include "lexer.hpp"
+#include "parser.hpp"
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -18,7 +19,7 @@ std::string leerArchivo(const std::string& ruta) {
 
 int main(int argc, char* argv[]) {
      if (argc < 2) {
-        std::cerr << "Uso: ./compilador <archivo.rs>" << std::endl;
+        std::cerr << "Usar: ./compilador <archivo.rs>" << std::endl;
         return 1;
     }
     std::string rutaArchivo = argv[1];
@@ -42,6 +43,18 @@ int main(int argc, char* argv[]) {
     } while (token.type != TokenType::END_OF_FILE);//nvm ahora vamos a guardar los tokens en un vector para que sea mas facil para el parser
     for (const auto& t : tokens) {
         std::cout << "Token: " << tokenTypeToString(t.type) << ", Lexema: '" << t.lexema << "', Linea: " << t.linea << ", Columna: " << t.columna << std::endl;
+    }
+
+    //prueba Parser
+    std::cout << "\n---PARSER---" << std::endl;
+    Parser parser(tokens);
+    parser.parsePrograma();
+ 
+    if (parser.huboErrores()) {
+        std::cout << "El programa tiene errores sintacticos." << std::endl;
+        return 1;
+    } else {
+        std::cout << "El programa es sintacticamente valido." << std::endl;
     }
 
     return 0;

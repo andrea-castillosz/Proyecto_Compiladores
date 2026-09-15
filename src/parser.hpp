@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <string>
-#include "Token.hpp"
+#include "token.hpp"
 
 class Parser {
 public:
@@ -15,8 +15,43 @@ private:
     size_t pos;
     bool errores;
 
-    Token actual() const; //se supone que devuelve el token actual
-    bool coincide(TokenType tipo);//si el token actual coincide con el tipo esperado, avanza y devuelve true, si no devuelve false
-    Token consumir(TokenType tipo, const std::string& mensaje);//lo mismo que coincide pero si no coincide lanza un error
-    void error(const std::string& mensaje);//marca que hubo un error y muestra el mensaje
+    // utilidades de recorrido
+    Token actual() const;
+    Token anterior() const;
+    bool esFinDeTokens() const;
+    bool revisar(TokenType tipo) const; // mira el token actual sin consumir
+    bool coincide(TokenType tipo); // si coincide, avanza y devuelve true
+    Token avanzar(); // consume el token actual y lo devuelve
+    Token consumir(TokenType tipo, const std::string& mensaje); // como coincide, pero lanza error si no coincide
+    void error(const std::string& mensaje);
+    void sincronizar(); // modo pánico: avanza hasta el proximo punto seguro tras un error
+
+    // reglas de la gramatica (una función por regla)
+    void declaracion();
+    void declaracionFuncion();
+    void parametros();
+    void tipoDato();
+    void bloque();
+    void declaracionVariable();
+
+    void sentencia();
+    void sentenciaExpresion();
+    void sentenciaIf();
+    void sentenciaWhile();
+    void sentenciaFor();
+    void sentenciaReturn();
+
+    // expresiones, de menor a mayor precedencia
+    void expresion();
+    void asignacion();
+    void logicoOr();
+    void logicoAnd();
+    void igualdad();
+    void comparacion();
+    void rango();
+    void termino();
+    void factor();
+    void unario();
+    void llamada();
+    void primario();
 };
