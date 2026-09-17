@@ -1,7 +1,8 @@
 #include "lexer.hpp"
 #include "PalabrasReservadas.hpp"
+#include "logerrores.hpp"
 
-Lexer::Lexer(const std::string& entradaFuente) {
+Lexer::Lexer(const std::string& entradaFuente, LogErrores& log) : log(log) {
     entrada = entradaFuente;
     pos = 0;
     linea = 1;

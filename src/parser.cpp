@@ -9,7 +9,7 @@ namespace {
     struct ErrorSintactico {};
 }
 
-Parser::Parser(const std::vector<Token>& tokensEntrada) {
+Parser::Parser(const std::vector<Token>& tokensEntrada, LogErrores& log): log(log) {
     tokens = tokensEntrada;
     pos = 0;
     errores = false;
@@ -53,8 +53,7 @@ Token Parser::consumir(TokenType tipo, const std::string& mensaje) {
 void Parser::error(const std::string& mensaje) {
     errores = true;
     Token t = actual();
-    std::cerr << "[linea " << t.linea << ", columna " << t.columna << "] Error sintactico: "
-              << mensaje << " (se encontro '" << t.lexema << "')" << std::endl;
+     log.agregar(TipoError::SINTACTICO, mensaje, t.linea, t.columna);
 }
 
 void Parser::sincronizar() {

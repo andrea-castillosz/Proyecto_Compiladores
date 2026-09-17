@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall
-FUENTES = main.cpp lexer.cpp token.cpp parser.cpp nodo.cpp
+FUENTES = main.cpp lexer.cpp token.cpp parser.cpp nodo.cpp logerrores.cpp 
 EJECUTABLE = compilador
 
 $(EJECUTABLE): $(FUENTES)

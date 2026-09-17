@@ -3,14 +3,17 @@
 #include <vector>
 #include <string>
 #include "token.hpp"
+#include "nodo.hpp"
+#include "logerrores.hpp"
 
 class Parser {
 public:
-    Parser(const std::vector<Token>& tokens);
+    Parser(const std::vector<Token>& tokens,LogErrores& log);
     void parsePrograma();
     bool huboErrores() const;
 
 private:
+    LogErrores& log;
     std::vector<Token> tokens;
     size_t pos;
     bool errores;

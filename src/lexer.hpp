@@ -3,11 +3,13 @@
 
 #include <string>
 #include "token.hpp"
+#include "logerrores.hpp"
 using namespace std;
 
 class Lexer {
 public:
-    Lexer(const string& entrada);
+    Lexer(const string& entrada, LogErrores& log);
+    
     Token siguienteToken();
 
 private:
@@ -15,6 +17,7 @@ private:
     size_t pos;
     int linea;
     int columna;
+    LogErrores& log;
 
     // utilidades de recorrido
     char verActual() const;

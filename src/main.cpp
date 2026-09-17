@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include "nodo.hpp"
+#include "logerrores.hpp"
 
 std::string leerArchivo(const std::string& ruta) {
     std::ifstream archivo(ruta);
@@ -35,8 +36,9 @@ int main(int argc, char* argv[]) {
     }
 
     //prueba Lexer
+    LogErrores log;
     std::vector<Token> tokens;
-    Lexer lexer(contenido);
+    Lexer lexer(contenido, log);
     Token token;
     do {
         token = lexer.siguienteToken();
@@ -48,22 +50,21 @@ int main(int argc, char* argv[]) {
 
     //prueba Parser
     std::cout << "\n---PARSER---" << std::endl;
-    Parser parser(tokens);
+    Parser parser(tokens, log);
     parser.parsePrograma();
  
-    if (parser.huboErrores()) {
-        std::cout << "El programa tiene errores sintacticos." << std::endl;
-        return 1;
+    if(!log.vacio()) {
+        std::cout << "Errores encontrados durante el analisis:" << std::endl;
+        log.imprimir();
     } else {
-        std::cout << "El programa es sintacticamente valido." << std::endl;
+        std::cout << "No se encontraron errores." << std::endl;
     }
-
 
     //prueba Arbol
     Nodo* raiz = new Nodo("let", "x");
     raiz->agregar(new Nodo("literal", "10"));
     imprimirArbol(raiz);
-    
+
     return 0;
 }
 
