@@ -53,7 +53,9 @@ Token Parser::consumir(TokenType tipo, const std::string& mensaje) {
 void Parser::error(const std::string& mensaje) {
     errores = true;
     Token t = actual();
-     log.agregar(TipoError::SINTACTICO, mensaje, t.linea, t.columna);
+    log.agregar(TipoError::SINTACTICO,
+                mensaje + " (se encontro '" + t.lexema + "')",
+                t.linea, t.columna);
 }
 
 void Parser::sincronizar() {

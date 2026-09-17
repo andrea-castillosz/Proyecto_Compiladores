@@ -19,3 +19,4 @@ void LogErrores::imprimir() const {
               << "] Error " << etiqueta << ": " << error.mensaje << std::endl;
     }
 }
+

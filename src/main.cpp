@@ -44,12 +44,9 @@ int main(int argc, char* argv[]) {
         token = lexer.siguienteToken();
         tokens.push_back(token);
     } while (token.type != TokenType::END_OF_FILE);//nvm ahora vamos a guardar los tokens en un vector para que sea mas facil para el parser
-    for (const auto& t : tokens) {
-        std::cout << "Token: " << tokenTypeToString(t.type) << ", Lexema: '" << t.lexema << "', Linea: " << t.linea << ", Columna: " << t.columna << std::endl;
-    }
-
+   
     //prueba Parser
-    std::cout << "\n---PARSER---" << std::endl;
+    std::cout << "\n---Errores---" << std::endl;
     Parser parser(tokens, log);
     parser.parsePrograma();
  

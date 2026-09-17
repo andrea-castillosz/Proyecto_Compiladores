@@ -1,7 +1,6 @@
 fn main() {
-    let a = 10
-    let b = ;
-    let c = 5;
-    if x < { }
-    return
+    let a = 1 | 2;
+    let b = 'ab';
+    let c = x.y;
+    let d = "sin cerrar
 }

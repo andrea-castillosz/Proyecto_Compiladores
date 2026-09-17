@@ -97,6 +97,7 @@ Token Lexer::siguienteToken() {
                 return construirToken(TokenType::AMP, "&", lineaInicio, columnaInicio);
             case '|':
                 if (coincide('|')) return construirToken(TokenType::OR, "||", lineaInicio, columnaInicio);
+                log.agregar(TipoError::LEXICO, "Caracter inesperado: '|'", lineaInicio, columnaInicio);
                 return construirToken(TokenType::ERROR, "|", lineaInicio, columnaInicio);
             case '!':
                 if (coincide('=')) return construirToken(TokenType::NEQ, "!=", lineaInicio, columnaInicio);
@@ -112,6 +113,7 @@ Token Lexer::siguienteToken() {
                 return construirToken(TokenType::ASSIGN, "=", lineaInicio, columnaInicio);
             case '.':
                 if (coincide('.')) return construirToken(TokenType::RANGE, "..", lineaInicio, columnaInicio);
+                log.agregar(TipoError::LEXICO, "Caracter inesperado: '.'", lineaInicio, columnaInicio);
                 return construirToken(TokenType::ERROR, ".", lineaInicio, columnaInicio);
 
             
@@ -122,6 +124,7 @@ Token Lexer::siguienteToken() {
                 }
                 if (coincide('*')) { // si no cerro bien devuelve un token de error si no cae en el continue
                     if (!comentarioDeBloque()) {
+                        log.agregar(TipoError::LEXICO, "Comentario de bloque no cerrado", lineaInicio, columnaInicio);
                         return construirToken(TokenType::ERROR, "/*", lineaInicio, columnaInicio);
                     }
                     continue;
@@ -140,6 +143,7 @@ Token Lexer::siguienteToken() {
                     pos = inicioLexema; columna = columnaInicio; 
                     return identificador(lineaInicio, columnaInicio);
                 }
+                log.agregar(TipoError::LEXICO, std::string("Caracter inesperado: '") + c + "'", lineaInicio, columnaInicio);    
                 return construirToken(TokenType::ERROR, std::string(1, c), lineaInicio, columnaInicio);
         }
     }
@@ -183,6 +187,7 @@ Token Lexer::cadena(int lineaInicio, int columnaInicio) {
                 avanzar();
             } else {
                 std::string lexema = entrada.substr(inicio - 1, pos - inicio + 1);
+                log.agregar(TipoError::LEXICO, "Secuencia de escape invalida en cadena", lineaInicio, columnaInicio);
                 return construirToken(TokenType::ERROR, lexema, lineaInicio, columnaInicio);
             }
         } else {
@@ -192,6 +197,7 @@ Token Lexer::cadena(int lineaInicio, int columnaInicio) {
 
     if (verActual() != '"') {
         std::string lexema = entrada.substr(inicio - 1, pos - inicio + 1);
+        log.agregar(TipoError::LEXICO, "Cadena no cerrada", lineaInicio, columnaInicio);
         return construirToken(TokenType::ERROR, lexema, lineaInicio, columnaInicio);
     }
 
@@ -206,6 +212,7 @@ Token Lexer::caracter(int lineaInicio, int columnaInicio) {
 
     if (pos >= entrada.size() || verActual() == '\'' || verActual() == '\n') {
         std::string lexema = entrada.substr(inicio - 1, pos - inicio + 1);
+        log.agregar(TipoError::LEXICO, "literal de caracter vacio o mal formado", lineaInicio, columnaInicio);
         return construirToken(TokenType::ERROR, lexema, lineaInicio, columnaInicio);
     }
 
@@ -215,6 +222,7 @@ Token Lexer::caracter(int lineaInicio, int columnaInicio) {
             avanzar();
         } else {
             std::string lexema = entrada.substr(inicio - 1, pos - inicio + 1);
+            log.agregar(TipoError::LEXICO, "Secuencia de escape invalida en caracter", lineaInicio, columnaInicio);
             return construirToken(TokenType::ERROR, lexema, lineaInicio, columnaInicio);
         }
     } else {
@@ -223,6 +231,7 @@ Token Lexer::caracter(int lineaInicio, int columnaInicio) {
 
     if (verActual() != '\'') {
         std::string lexema = entrada.substr(inicio - 1, pos - inicio + 1);
+        log.agregar(TipoError::LEXICO, "literal de caracter mal formado, se esperaba la comilla de cierre", lineaInicio, columnaInicio);
         return construirToken(TokenType::ERROR, lexema, lineaInicio, columnaInicio);
     }
 
