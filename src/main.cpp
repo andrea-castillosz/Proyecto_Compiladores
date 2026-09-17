@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include "nodo.hpp"
 
 std::string leerArchivo(const std::string& ruta) {
     std::ifstream archivo(ruta);
@@ -57,6 +58,12 @@ int main(int argc, char* argv[]) {
         std::cout << "El programa es sintacticamente valido." << std::endl;
     }
 
+
+    //prueba Arbol
+    Nodo* raiz = new Nodo("let", "x");
+    raiz->agregar(new Nodo("literal", "10"));
+    imprimirArbol(raiz);
+    
     return 0;
 }
 

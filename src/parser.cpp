@@ -154,8 +154,9 @@ void Parser::declaracionVariable() {
     if (coincide(TokenType::COLON)) {
         tipoDato();
     }
-    consumir(TokenType::ASSIGN, "se esperaba '=' en la declaracion de variable");
+    if (coincide(TokenType::ASSIGN)) {
     expresion();
+    }
     consumir(TokenType::SEMICOLON, "se esperaba ';' al final de la declaracion");
 }
 
