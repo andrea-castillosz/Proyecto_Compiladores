@@ -9,7 +9,7 @@
 class Parser {
 public:
     Parser(const std::vector<Token>& tokens,LogErrores& log);
-    void parsePrograma();
+    Nodo* parsePrograma();
     bool huboErrores() const;
 
 private:
@@ -30,31 +30,31 @@ private:
     void sincronizar(); // modo pánico: avanza hasta el proximo punto seguro tras un error
 
     // reglas de la gramatica (una función por regla)
-    void declaracion();
-    void declaracionFuncion();
-    void parametros();
-    void tipoDato();
-    void bloque();
-    void declaracionVariable();
+    Nodo* declaracion();
+    Nodo* declaracionFuncion();
+    Nodo* parametros();
+    Nodo* tipoDato();
+    Nodo* bloque();
+    Nodo* declaracionVariable();
 
-    void sentencia();
-    void sentenciaExpresion();
-    void sentenciaIf();
-    void sentenciaWhile();
-    void sentenciaFor();
-    void sentenciaReturn();
-
+    Nodo* sentencia();
+    Nodo* sentenciaExpresion();
+    Nodo* sentenciaIf();
+    Nodo* sentenciaWhile();
+    Nodo* sentenciaFor();
+    Nodo* sentenciaReturn();
+ 
     // expresiones, de menor a mayor precedencia
-    void expresion();
-    void asignacion();
-    void logicoOr();
-    void logicoAnd();
-    void igualdad();
-    void comparacion();
-    void rango();
-    void termino();
-    void factor();
-    void unario();
-    void llamada();
-    void primario();
+    Nodo* expresion();
+    Nodo* asignacion();
+    Nodo* logicoOr();
+    Nodo* logicoAnd();
+    Nodo* igualdad();
+    Nodo* comparacion();
+    Nodo* rango();
+    Nodo* termino();
+    Nodo* factor();
+    Nodo* unario();
+    Nodo* llamada();
+    Nodo* primario();
 };

@@ -1,4 +1,4 @@
-#include "Nodo.hpp"
+#include "nodo.hpp"
 #include <iostream>
 
 void imprimirArbol(const Nodo* nodo, int nivel) {

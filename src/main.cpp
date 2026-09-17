@@ -48,20 +48,19 @@ int main(int argc, char* argv[]) {
     //prueba Parser
     std::cout << "\n---Errores---" << std::endl;
     Parser parser(tokens, log);
-    parser.parsePrograma();
+    Nodo* raiz = parser.parsePrograma(); // antes: parser.parsePrograma(); sin usar el resultado
  
-    if(!log.vacio()) {
+    if (!log.vacio()) {
         std::cout << "Errores encontrados durante el analisis:" << std::endl;
         log.imprimir();
     } else {
         std::cout << "No se encontraron errores." << std::endl;
     }
-
-    //prueba Arbol
-    Nodo* raiz = new Nodo("let", "x");
-    raiz->agregar(new Nodo("literal", "10"));
+ 
+    // AST real, construido por el parser (ya no el nodo de prueba armado a mano)
+    std::cout << "\n--Arbol de sintaxis abstracta--" << std::endl;
     imprimirArbol(raiz);
-
+ 
     return 0;
 }
 

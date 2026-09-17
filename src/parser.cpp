@@ -79,255 +79,345 @@ void Parser::sincronizar() {
 
 // punto de entrada
 // programa declaracion*
-void Parser::parsePrograma() {
+Nodo* Parser::parsePrograma() {
+    Nodo* raiz = new Nodo("programa");
     while (!esFinDeTokens()) {
         try {
-            declaracion();
+            raiz->agregar(declaracion());
         } catch (const ErrorSintactico&) {
             sincronizar();
         }
     }
+    return raiz;
 }
 
 // declaracion declaracionFuncion | declaracionVariable | sentencia
-void Parser::declaracion() {
-    if (revisar(TokenType::FN)) { declaracionFuncion(); return; }
-    if (revisar(TokenType::LET)) { declaracionVariable(); return; }
-    sentencia();
+Nodo* Parser::declaracion() {
+    if (revisar(TokenType::FN)) return declaracionFuncion();
+    if (revisar(TokenType::LET)) return declaracionVariable();
+    return sentencia();
 }
 
 // declaracionFuncion "fn" identificador "(" parametros? ")" ("->" tipoDato)? bloque
-void Parser::declaracionFuncion() {
+Nodo* Parser::declaracionFuncion() {
     consumir(TokenType::FN, "se esperaba 'fn'");
-    consumir(TokenType::IDENTIFICADOR, "se esperaba el nombre de la funcion");
+    Token nombre = consumir(TokenType::IDENTIFICADOR, "se esperaba el nombre de la funcion");
+ 
+    Nodo* nodoFn = new Nodo("funcion", nombre.lexema);
+ 
     consumir(TokenType::LPAREN, "se esperaba '(' despues del nombre de la funcion");
     if (!revisar(TokenType::RPAREN)) {
-        parametros();
+        nodoFn->agregar(parametros());
+    } else {
+        nodoFn->agregar(new Nodo("parametros"));
     }
     consumir(TokenType::RPAREN, "se esperaba ')' despues de los parametros");
+ 
     if (coincide(TokenType::ARROW)) {
-        tipoDato();
+        nodoFn->agregar(tipoDato());
     }
-    bloque();
+ 
+    nodoFn->agregar(bloque());
+    return nodoFn;
 }
 
 // parametros identificador ":" tipoDato ("," identificador ":" tipoDato)*
-void Parser::parametros() {
-    consumir(TokenType::IDENTIFICADOR, "se esperaba el nombre del parametro");
+Nodo* Parser::parametros() {
+    Nodo* nodoParams = new Nodo("parametros"); 
+    Token nombre = consumir(TokenType::IDENTIFICADOR, "se esperaba el nombre del parametro");
     consumir(TokenType::COLON, "se esperaba ':' despues del nombre del parametro");
-    tipoDato();
+    Nodo* param = new Nodo("parametro", nombre.lexema);
+    param->agregar(tipoDato());
+    nodoParams->agregar(param);
+ 
     while (coincide(TokenType::COMMA)) {
-        consumir(TokenType::IDENTIFICADOR, "se esperaba el nombre del parametro");
+        Token otro = consumir(TokenType::IDENTIFICADOR, "se esperaba el nombre del parametro");
         consumir(TokenType::COLON, "se esperaba ':' despues del nombre del parametro");
-        tipoDato();
+        Nodo* paramOtro = new Nodo("parametro", otro.lexema);
+        paramOtro->agregar(tipoDato());
+        nodoParams->agregar(paramOtro);
     }
+ 
+    return nodoParams;
 }
 
 // tipoDato "i32" | "f64" | "bool" | "char" | "str"
-void Parser::tipoDato() {
-    if (coincide(TokenType::TIPO_I32)) return;
-    if (coincide(TokenType::TIPO_F64)) return;
-    if (coincide(TokenType::TIPO_BOOL)) return;
-    if (coincide(TokenType::TIPO_CHAR)) return;
-    if (coincide(TokenType::TIPO_STR)) return;
+Nodo* Parser::tipoDato() {
+    if (revisar(TokenType::TIPO_I32) || revisar(TokenType::TIPO_F64) ||
+        revisar(TokenType::TIPO_BOOL) || revisar(TokenType::TIPO_CHAR) ||
+        revisar(TokenType::TIPO_STR)) {
+        Token t = avanzar();
+        return new Nodo("tipo", t.lexema);
+    }
     error("se esperaba un tipo de dato (i32, f64, bool, char, str)");
     throw ErrorSintactico{};
 }
 
 // bloque "{" declaracion* "}"
-void Parser::bloque() {
+Nodo* Parser::bloque() {
     consumir(TokenType::LBRACE, "se esperaba '{'");
+    Nodo* nodoBloque = new Nodo("bloque"); 
     while (!revisar(TokenType::RBRACE) && !esFinDeTokens()) {
         try {
-            declaracion();
+            nodoBloque->agregar(declaracion());
         } catch (const ErrorSintactico&) {
             sincronizar();
         }
     }
+ 
     consumir(TokenType::RBRACE, "se esperaba '}'");
+    return nodoBloque;
 }
 
 // declaracionVariable "let" "mut"? IDENT (":" tipoDato)? "=" expresion ";"
-void Parser::declaracionVariable() {
+Nodo* Parser::declaracionVariable() {
     consumir(TokenType::LET, "se esperaba 'let'");
-    coincide(TokenType::MUT); // opcional
-    consumir(TokenType::IDENTIFICADOR, "se esperaba el nombre de la variable");
+    bool esMut = coincide(TokenType::MUT);
+    Token nombre = consumir(TokenType::IDENTIFICADOR, "se esperaba el nombre de la variable");
+ 
+    Nodo* nodoLet = new Nodo(esMut ? "let_mut" : "let", nombre.lexema);
+ 
     if (coincide(TokenType::COLON)) {
-        tipoDato();
+        nodoLet->agregar(tipoDato());
     }
     if (coincide(TokenType::ASSIGN)) {
-    expresion();
+        nodoLet->agregar(expresion());
     }
     consumir(TokenType::SEMICOLON, "se esperaba ';' al final de la declaracion");
+    return nodoLet;
 }
 
 // sentencia sentenciaIf, sentenciaWhile, sentenciaFor, sentenciaReturn, bloque, sentenciaExpresion
-void Parser::sentencia() {
-    if (revisar(TokenType::IF)) { sentenciaIf(); return; }
-    if (revisar(TokenType::WHILE)) { sentenciaWhile(); return; }
-    if (revisar(TokenType::FOR)) { sentenciaFor(); return; }
-    if (revisar(TokenType::RETURN)) { sentenciaReturn(); return; }
-    if (revisar(TokenType::LBRACE)) { bloque(); return; }
-    sentenciaExpresion();
+Nodo* Parser::sentencia() {
+    if (revisar(TokenType::IF)) return sentenciaIf();
+    if (revisar(TokenType::WHILE)) return sentenciaWhile();
+    if (revisar(TokenType::FOR)) return sentenciaFor();
+    if (revisar(TokenType::RETURN)) return sentenciaReturn();
+    if (revisar(TokenType::LBRACE)) return bloque();
+    return sentenciaExpresion();
 }
 
 // sentenciaExpresion expresion ";"
-void Parser::sentenciaExpresion() {
-    expresion();
+Nodo* Parser::sentenciaExpresion() {
+    Nodo* expr = expresion();
     consumir(TokenType::SEMICOLON, "se esperaba ';' despues de la expresion");
+    return expr;
 }
 
 // sentenciaIf "if" expresion bloque ("else" (sentenciaIf | bloque))?
-void Parser::sentenciaIf() {
+Nodo* Parser::sentenciaIf() {
     consumir(TokenType::IF, "se esperaba 'if'");
-    expresion();
-    bloque();
+    Nodo* nodoIf = new Nodo("si");
+    nodoIf->agregar(expresion());
+    nodoIf->agregar(bloque());
+ 
     if (coincide(TokenType::ELSE)) {
         if (revisar(TokenType::IF)) {
-            sentenciaIf();
+            nodoIf->agregar(sentenciaIf());
         } else {
-            bloque();
+            nodoIf->agregar(bloque());
         }
     }
+    return nodoIf;
 }
 
 // sentenciaWhile "while" expresion bloque
-void Parser::sentenciaWhile() {
+Nodo* Parser::sentenciaWhile() {
     consumir(TokenType::WHILE, "se esperaba 'while'");
-    expresion();
-    bloque();
+    Nodo* nodoWhile = new Nodo("mientras");
+    nodoWhile->agregar(expresion());
+    nodoWhile->agregar(bloque());
+    return nodoWhile;
 }
 
 // sentenciaFor "for" identificador "in" expresion bloque
-void Parser::sentenciaFor() {
+Nodo* Parser::sentenciaFor() {
     consumir(TokenType::FOR, "se esperaba 'for'");
-    consumir(TokenType::IDENTIFICADOR, "se esperaba el nombre de la variable de iteracion");
+    Token var = consumir(TokenType::IDENTIFICADOR, "se esperaba el nombre de la variable de iteracion");
     consumir(TokenType::IN, "se esperaba 'in'");
-    expresion();
-    bloque();
+ 
+    Nodo* nodoFor = new Nodo("para", var.lexema);
+    nodoFor->agregar(expresion());
+    nodoFor->agregar(bloque());
+    return nodoFor;
 }
 
 // sentenciaReturn "return" expresion? ";"
-void Parser::sentenciaReturn() {
+Nodo* Parser::sentenciaReturn() {
     consumir(TokenType::RETURN, "se esperaba 'return'");
+    Nodo* nodoReturn = new Nodo("retornar");
     if (!revisar(TokenType::SEMICOLON)) {
-        expresion();
+        nodoReturn->agregar(expresion());
     }
     consumir(TokenType::SEMICOLON, "se esperaba ';' despues de return");
+    return nodoReturn;
 }
 
 // expresiones (de menor a mayor precedencia)
 
 // expresion asignacion
-void Parser::expresion() { asignacion(); }
+Nodo* Parser::expresion() { return asignacion(); }
 
 // asignacion logicoOr ("=" asignacion)?
-void Parser::asignacion() {
-    logicoOr();
+Nodo* Parser::asignacion() {
+    Nodo* izq = logicoOr();
     if (coincide(TokenType::ASSIGN)) {
-        asignacion();
+        Nodo* der = asignacion();
+        Nodo* nodo = new Nodo("=");
+        nodo->agregar(izq);
+        nodo->agregar(der);
+        return nodo;
     }
+    return izq;
 }
 
 // logicoOr logicoAnd ("||" logicoAnd)*
-void Parser::logicoOr() {
-    logicoAnd();
+Nodo* Parser::logicoOr() {
+    Nodo* izq = logicoAnd();
     while (coincide(TokenType::OR)) {
-        logicoAnd();
+        Nodo* der = logicoAnd();
+        Nodo* nodo = new Nodo("||");
+        nodo->agregar(izq);
+        nodo->agregar(der);
+        izq = nodo;
     }
+    return izq;
 }
 
 // logicoAnd igualdad ("&&" igualdad)*
-void Parser::logicoAnd() {
-    igualdad();
+Nodo* Parser::logicoAnd() {
+    Nodo* izq = igualdad();
     while (coincide(TokenType::AND)) {
-        igualdad();
+        Nodo* der = igualdad();
+        Nodo* nodo = new Nodo("&&");
+        nodo->agregar(izq);
+        nodo->agregar(der);
+        izq = nodo;
     }
+    return izq;
 }
 
 // igualdad comparacion (("==" | "!=") comparacion)*
-void Parser::igualdad() {
-    comparacion();
+Nodo* Parser::igualdad() {
+    Nodo* izq = comparacion();
     while (revisar(TokenType::EQ) || revisar(TokenType::NEQ)) {
-        avanzar();
-        comparacion();
+        Token op = avanzar();
+        Nodo* der = comparacion();
+        Nodo* nodo = new Nodo(op.lexema);
+        nodo->agregar(izq);
+        nodo->agregar(der);
+        izq = nodo;
     }
+    return izq;
 }
 
 // comparacion rango (("<" | "<=" | ">" | ">=") rango)*
-void Parser::comparacion() {
-    rango();
+Nodo* Parser::comparacion() {
+    Nodo* izq = rango();
     while (revisar(TokenType::LT) || revisar(TokenType::LE) ||
            revisar(TokenType::GT) || revisar(TokenType::GE)) {
-        avanzar();
-        rango();
+        Token op = avanzar();
+        Nodo* der = rango();
+        Nodo* nodo = new Nodo(op.lexema);
+        nodo->agregar(izq);
+        nodo->agregar(der);
+        izq = nodo;
     }
+    return izq;
 }
 
 // rango termino (".." termino)?
-void Parser::rango() {
-    termino();
+Nodo* Parser::rango() {
+    Nodo* izq = termino();
     if (coincide(TokenType::RANGE)) {
-        termino();
+        Nodo* der = termino();
+        Nodo* nodo = new Nodo("..");
+        nodo->agregar(izq);
+        nodo->agregar(der);
+        return nodo;
     }
+    return izq;
 }
 
 // termino factor (("+" | "-") factor)*
-void Parser::termino() {
-    factor();
+Nodo* Parser::termino() {
+    Nodo* izq = factor();
     while (revisar(TokenType::PLUS) || revisar(TokenType::MINUS)) {
-        avanzar();
-        factor();
+        Token op = avanzar();
+        Nodo* der = factor();
+        Nodo* nodo = new Nodo(op.lexema);
+        nodo->agregar(izq);
+        nodo->agregar(der);
+        izq = nodo;
     }
+    return izq;
 }
 
 // factor unario (("*" | "/" | "%") unario)*
-void Parser::factor() {
-    unario();
+Nodo* Parser::factor() {
+    Nodo* izq = unario();
     while (revisar(TokenType::TIMES) || revisar(TokenType::DIV) || revisar(TokenType::MOD)) {
-        avanzar();
-        unario();
+        Token op = avanzar();
+        Nodo* der = unario();
+        Nodo* nodo = new Nodo(op.lexema);
+        nodo->agregar(izq);
+        nodo->agregar(der);
+        izq = nodo;
     }
+    return izq;
 }
 
 // unario ("!" | "-") unario | llamada
-void Parser::unario() {
+Nodo* Parser::unario() {
     if (revisar(TokenType::NOT) || revisar(TokenType::MINUS)) {
-        avanzar();
-        unario();
-        return;
+        Token op = avanzar();
+        Nodo* operando = unario();
+        Nodo* nodo = new Nodo("unario_" + op.lexema);
+        nodo->agregar(operando);
+        return nodo;
     }
-    llamada();
+    return llamada();
 }
 
 // llamada primario ("(" argumentos ")")*
-void Parser::llamada() {
-    primario();
+Nodo* Parser::llamada() {
+    Nodo* expr = primario();
     while (coincide(TokenType::LPAREN)) {
+        Nodo* nodoLlamada = new Nodo("llamada");
+        nodoLlamada->agregar(expr);
+ 
         if (!revisar(TokenType::RPAREN)) {
-            expresion();
+            nodoLlamada->agregar(expresion());
             while (coincide(TokenType::COMMA)) {
-                expresion();
+                nodoLlamada->agregar(expresion());
             }
         }
         consumir(TokenType::RPAREN, "se esperaba ')' despues de los argumentos");
+        expr = nodoLlamada;
     }
+    return expr;
 }
 
 // primario  integer, float, string, character, true, false, identificador, "(" expresion ")"
-void Parser::primario() {
-    if (coincide(TokenType::INTEGER)) return;
-    if (coincide(TokenType::FLOAT)) return;
-    if (coincide(TokenType::STRING)) return;
-    if (coincide(TokenType::CHARACTER)) return;
-    if (coincide(TokenType::TRUE)) return;
-    if (coincide(TokenType::FALSE)) return;
-    if (coincide(TokenType::IDENTIFICADOR)) return;
-    if (coincide(TokenType::LPAREN)) {
-        expresion();
-        consumir(TokenType::RPAREN, "se esperaba ')' para cerrar la expresion");
-        return;
+Nodo* Parser::primario() {
+    if (revisar(TokenType::INTEGER) || revisar(TokenType::FLOAT) ||
+        revisar(TokenType::STRING) || revisar(TokenType::CHARACTER) ||
+        revisar(TokenType::TRUE) || revisar(TokenType::FALSE)) {
+        Token t = avanzar();
+        return new Nodo("literal", t.lexema);
     }
+ 
+    if (revisar(TokenType::IDENTIFICADOR)) {
+        Token t = avanzar();
+        return new Nodo("identificador", t.lexema);
+    }
+ 
+    if (coincide(TokenType::LPAREN)) {
+        Nodo* expr = expresion();
+        consumir(TokenType::RPAREN, "se esperaba ')' para cerrar la expresion");
+        return expr;
+    }
+ 
     error("se esperaba una expresion");
     throw ErrorSintactico{};
 }
