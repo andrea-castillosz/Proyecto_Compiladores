@@ -17,3 +17,9 @@ void TablaSimbolos::imprimir() const {
         std::cout << "Índice: " << i << ", Lexema: " << simbolos[i].lexema << ", Tipo: " << tipoMostrado << std::endl;
     }
 }
+
+void TablaSimbolos::actualizarTipo(int indice, const std::string& tipo) {
+    if (indice >= 0 && indice < static_cast<int>(simbolos.size())) {
+        simbolos[indice].tipo = tipo;
+    }
+}

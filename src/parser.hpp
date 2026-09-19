@@ -5,15 +5,17 @@
 #include "token.hpp"
 #include "nodo.hpp"
 #include "logerrores.hpp"
+#include "tablasimbolos.hpp"
 
 class Parser {
 public:
-    Parser(const std::vector<Token>& tokens,LogErrores& log);
+    Parser(const std::vector<Token>& tokens,LogErrores& log, TablaSimbolos& tablaSimbolos);
     Nodo* parsePrograma();
     bool huboErrores() const;
 
 private:
     LogErrores& log;
+    TablaSimbolos& tablaSimbolos;
     std::vector<Token> tokens;
     size_t pos;
     bool errores;

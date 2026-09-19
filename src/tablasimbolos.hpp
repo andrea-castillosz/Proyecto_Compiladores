@@ -12,6 +12,7 @@ class TablaSimbolos {
 public:
     int insertar(const std::string& lexema, const std::string& tipo);
     void imprimir() const;
+    void actualizarTipo(int indice, const std::string& tipo);
 
 private:
     std::vector<Simbolo> simbolos;

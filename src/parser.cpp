@@ -9,7 +9,7 @@ namespace {
     struct ErrorSintactico {};
 }
 
-Parser::Parser(const std::vector<Token>& tokensEntrada, LogErrores& log): log(log) {
+Parser::Parser(const std::vector<Token>& tokensEntrada, LogErrores& log, TablaSimbolos& tablaSimbolos): log(log), tablaSimbolos(tablaSimbolos) {
     tokens = tokensEntrada;
     pos = 0;
     errores = false;
@@ -99,13 +99,14 @@ Nodo* Parser::declaracion() {
     return sentencia();
 }
 
-// declaracionFuncion "fn" identificador "(" parametros? ")" ("->" tipoDato)? bloque
 Nodo* Parser::declaracionFuncion() {
     consumir(TokenType::FN, "se esperaba 'fn'");
     Token nombre = consumir(TokenType::IDENTIFICADOR, "se esperaba el nombre de la funcion");
- 
+
     Nodo* nodoFn = new Nodo("funcion", nombre.lexema);
- 
+
+    int indiceFn = tablaSimbolos.insertar(nombre.lexema, ""); 
+
     consumir(TokenType::LPAREN, "se esperaba '(' despues del nombre de la funcion");
     if (!revisar(TokenType::RPAREN)) {
         nodoFn->agregar(parametros());
@@ -113,29 +114,34 @@ Nodo* Parser::declaracionFuncion() {
         nodoFn->agregar(new Nodo("parametros"));
     }
     consumir(TokenType::RPAREN, "se esperaba ')' despues de los parametros");
- 
+
     if (coincide(TokenType::ARROW)) {
-        nodoFn->agregar(tipoDato());
+        Nodo* nodoTipo = tipoDato();
+        tablaSimbolos.actualizarTipo(indiceFn, nodoTipo->valor);   
+        nodoFn->agregar(nodoTipo);
     }
- 
+
     nodoFn->agregar(bloque());
     return nodoFn;
 }
-
 // parametros identificador ":" tipoDato ("," identificador ":" tipoDato)*
 Nodo* Parser::parametros() {
     Nodo* nodoParams = new Nodo("parametros"); 
     Token nombre = consumir(TokenType::IDENTIFICADOR, "se esperaba el nombre del parametro");
     consumir(TokenType::COLON, "se esperaba ':' despues del nombre del parametro");
     Nodo* param = new Nodo("parametro", nombre.lexema);
-    param->agregar(tipoDato());
+    Nodo* nodoTipo = tipoDato();                              
+    tablaSimbolos.insertar(nombre.lexema, nodoTipo->valor);   
+    param->agregar(nodoTipo);                                 
     nodoParams->agregar(param);
  
     while (coincide(TokenType::COMMA)) {
         Token otro = consumir(TokenType::IDENTIFICADOR, "se esperaba el nombre del parametro");
         consumir(TokenType::COLON, "se esperaba ':' despues del nombre del parametro");
         Nodo* paramOtro = new Nodo("parametro", otro.lexema);
-        paramOtro->agregar(tipoDato());
+        Nodo* tipoOtro = tipoDato();                        
+        tablaSimbolos.insertar(otro.lexema, tipoOtro->valor);
+        paramOtro->agregar(tipoOtro);                        
         nodoParams->agregar(paramOtro);
     }
  
@@ -180,16 +186,22 @@ Nodo* Parser::declaracionVariable() {
     consumir(TokenType::LET, "se esperaba 'let'");
     bool esMut = coincide(TokenType::MUT);
     Token nombre = consumir(TokenType::IDENTIFICADOR, "se esperaba el nombre de la variable");
- 
+
     Nodo* nodoLet = new Nodo(esMut ? "let_mut" : "let", nombre.lexema);
- 
+
+    std::string tipo = "";
     if (coincide(TokenType::COLON)) {
-        nodoLet->agregar(tipoDato());
+        Nodo* nodoTipo = tipoDato();
+        tipo = nodoTipo->valor;
+        nodoLet->agregar(nodoTipo);
     }
+
     if (coincide(TokenType::ASSIGN)) {
         nodoLet->agregar(expresion());
     }
     consumir(TokenType::SEMICOLON, "se esperaba ';' al final de la declaracion");
+
+    tablaSimbolos.insertar(nombre.lexema, tipo);
     return nodoLet;
 }
 

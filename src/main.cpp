@@ -7,6 +7,7 @@
 #include <vector>
 #include "nodo.hpp"
 #include "logerrores.hpp"
+#include "tablasimbolos.hpp"
 
 std::string leerArchivo(const std::string& ruta) {
     std::ifstream archivo(ruta);
@@ -37,6 +38,7 @@ int main(int argc, char* argv[]) {
 
     //prueba Lexer
     LogErrores log;
+    TablaSimbolos tablaSimbolos;
     std::vector<Token> tokens;
     Lexer lexer(contenido, log);
     Token token;
@@ -47,7 +49,7 @@ int main(int argc, char* argv[]) {
    
     //prueba Parser
     std::cout << "\n---Errores---" << std::endl;
-    Parser parser(tokens, log);
+    Parser parser(tokens, log, tablaSimbolos);
     Nodo* raiz = parser.parsePrograma(); // antes: parser.parsePrograma(); sin usar el resultado
  
     if (!log.vacio()) {
@@ -60,7 +62,8 @@ int main(int argc, char* argv[]) {
     // AST real, construido por el parser (ya no el nodo de prueba armado a mano)
     std::cout << "\n--Arbol de sintaxis abstracta--" << std::endl;
     imprimirArbol(raiz);
- 
+    std::cout << "\n--Tabla de simbolos--" << std::endl;
+    tablaSimbolos.imprimir();
     return 0;
 }
 
