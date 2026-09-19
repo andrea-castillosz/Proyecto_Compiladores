@@ -86,6 +86,7 @@ Nodo* Parser::parsePrograma() {
             raiz->agregar(declaracion());
         } catch (const ErrorSintactico&) {
             sincronizar();
+            raiz->agregar(new Nodo("ERROR"));
         }
     }
     return raiz;
@@ -154,21 +155,26 @@ Nodo* Parser::tipoDato() {
 }
 
 // bloque "{" declaracion* "}"
-Nodo* Parser::bloque() {
+Nodo* Parser::bloque() {//se cambio para que devuelva un nodo "bloque" aunque haya errores, para que el arbol no se rompa
     consumir(TokenType::LBRACE, "se esperaba '{'");
-    Nodo* nodoBloque = new Nodo("bloque"); 
+    Nodo* nodoBloque = new Nodo("bloque");
     while (!revisar(TokenType::RBRACE) && !esFinDeTokens()) {
         try {
             nodoBloque->agregar(declaracion());
         } catch (const ErrorSintactico&) {
             sincronizar();
+            nodoBloque->agregar(new Nodo("ERROR"));
         }
     }
- 
-    consumir(TokenType::RBRACE, "se esperaba '}'");
+
+    if (!revisar(TokenType::RBRACE)) {
+        error("se esperaba '}'");
+        nodoBloque->agregar(new Nodo("ERROR"));
+    } else {
+        avanzar();
+    }
     return nodoBloque;
 }
-
 // declaracionVariable "let" "mut"? IDENT (":" tipoDato)? "=" expresion ";"
 Nodo* Parser::declaracionVariable() {
     consumir(TokenType::LET, "se esperaba 'let'");
@@ -385,13 +391,16 @@ Nodo* Parser::llamada() {
     while (coincide(TokenType::LPAREN)) {
         Nodo* nodoLlamada = new Nodo("llamada");
         nodoLlamada->agregar(expr);
- 
+
+        Nodo* nodoArgs = new Nodo("argumentos");
         if (!revisar(TokenType::RPAREN)) {
-            nodoLlamada->agregar(expresion());
+            nodoArgs->agregar(expresion());
             while (coincide(TokenType::COMMA)) {
-                nodoLlamada->agregar(expresion());
+                nodoArgs->agregar(expresion());
             }
         }
+        nodoLlamada->agregar(nodoArgs);
+
         consumir(TokenType::RPAREN, "se esperaba ')' despues de los argumentos");
         expr = nodoLlamada;
     }
