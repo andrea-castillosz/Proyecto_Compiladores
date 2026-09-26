@@ -1,4 +1,4 @@
-#include "TablaSimbolos.hpp"
+#include "tablaSimbolos.hpp"
 #include <iostream>
 
 int TablaSimbolos::insertar(const std::string& lexema, const std::string& tipo) {
