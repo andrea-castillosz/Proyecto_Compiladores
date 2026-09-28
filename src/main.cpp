@@ -55,15 +55,18 @@ int main(int argc, char* argv[]) {
     if (!log.vacio()) {
         std::cout << "Errores encontrados durante el analisis:" << std::endl;
         log.imprimir();
-    } else {
-        std::cout << "No se encontraron errores." << std::endl;
+        std::cout << "" << std::endl;
+        return 1;
     }
+
+    std::cout << "No se encontraron errores." << std::endl;
  
     // AST real, construido por el parser (ya no el nodo de prueba armado a mano)
     std::cout << "\n--Arbol de sintaxis abstracta--" << std::endl;
     imprimirArbol(raiz);
     std::cout << "\n--Tabla de simbolos--" << std::endl;
     tablaSimbolos.imprimir();
+    std::cout << "" << std::endl;
     return 0;
 }
 
