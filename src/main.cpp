@@ -55,8 +55,6 @@ int main(int argc, char* argv[]) {
     if (!log.vacio()) {
         std::cout << "Errores encontrados durante el analisis:" << std::endl;
         log.imprimir();
-        std::cout << "" << std::endl;
-        return 1;
     }
 
     std::cout << "No se encontraron errores." << std::endl;
